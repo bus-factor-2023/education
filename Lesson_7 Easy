@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: GPL-3.0
+
+pragma solidity >0.8.2;
+
+contract ContactBook {
+
+    string public myName;
+    uint256 public myAge;
+    address public myAddress;
+
+    struct Contact{
+        string name;
+        uint256 age;
+        address wallet;
+        bool friend;
+    }
+
+    Contact[] public contacts;
+
+    constructor(address _address,uint256 _age, string memory _name) {
+        myAddress = _address;
+        myAge = _age;
+        myName = _name;
+    }
+
+    function getAllOlder() view public returns(uint256[10] memory){
+        uint[10] memory _older;
+        uint256 k=0;
+        for(uint256 i=0;i<contacts.length;i++){
+            if(isOlder(i) == true){
+                _older[k]=i;
+                k++;
+            }
+        }
+        return _older;
+    }
+
+    function getAllFriends() view public returns(uint256[10] memory){
+        uint[10] memory _friends;
+        uint256 k=0;
+        for(uint256 i=0;i<contacts.length;i++){
+            if(isFriend(i) == true){
+                _friends[k]=i;
+                k++;
+            }
+        }
+        return _friends;
+    }
+
+    function addContact(address _address, uint256 _age, string memory _name, bool _friend) public onlyOwner {
+        Contact memory _contact = Contact(_name,_age,_address,_friend);
+        contacts.push(_contact);
+    }
+
+    function isOlder(uint256 _index) view public returns(bool){
+        //Зараз _index=0 (для перешої ітерації)
+        uint256 _age = getAgeByIndex(_index);
+        if(_age > myAge){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+     function isFriend(uint256 _index) view public returns(bool){
+        bool _friend = getFriendByIndex(_index);
+        if(_friend == true){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function getContact(uint256 _index) view internal returns(Contact memory){
+        return contacts[_index];
+    }
+
+    function getNameByIndex(uint256 _index) view public returns(string memory){
+        return getContact(_index).name;
+    }
+
+    function getAgeByIndex(uint256 _index) view public returns(uint256){
+        return getContact(_index).age;
+    }
+
+    function getAddressByIndex(uint256 _index) view public returns(address){
+        return getContact(_index).wallet;
+    }
+
+    function getFriendByIndex (uint256 _index) view public returns (bool) {
+          return getContact(_index).friend;
+    }
+
+    modifier onlyOwner(){
+        require(msg.sender == myAddress);
+        _;
+    }
+}
